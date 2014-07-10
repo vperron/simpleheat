@@ -17,6 +17,7 @@ function simpleheat(canvas) {
     this._height = canvas.height;
 
     this._max = 1;
+    this._forcedAlpha = 128;
     this._data = [];
 }
 
@@ -131,9 +132,11 @@ simpleheat.prototype = {
                 pixels[i - 3] = gradient[j];
                 pixels[i - 2] = gradient[j + 1];
                 pixels[i - 1] = gradient[j + 2];
+                pixels[i] = this._forcedAlpha;
             }
         }
     }
+
 };
 
 window.simpleheat = simpleheat;
