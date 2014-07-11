@@ -70,7 +70,7 @@ simpleheat.prototype = {
         ctx.shadowColor = 'black';
 
         ctx.beginPath();
-        ctx.arc(r2 - 200, r2 - 200, r, 0, Math.PI * 2, true);
+        ctx.rect(r2 - 200, r2 - 200, 2*r, 2*r);
         ctx.closePath();
         ctx.fill();
 
