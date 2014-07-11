@@ -88,7 +88,7 @@ simpleheat.prototype = {
             p = this._data[i];
             ctx.fillStyle = this._grad(p[2] / this._max);
             ctx.beginPath();
-            ctx.rect(p[0] - r, p[1] - r, 2*r, 2*r);
+            ctx.rect(p[0] - r/2, p[1] - r/2, r, r);
             ctx.closePath();
             ctx.fill();
         }
