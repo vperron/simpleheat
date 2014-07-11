@@ -17,7 +17,7 @@ function simpleheat(canvas) {
     this._height = canvas.height;
 
     this._max = 1;
-    this._forcedAlpha = 128;
+    this._forcedAlpha = 0.5;
     this._data = [];
 }
 
@@ -58,50 +58,21 @@ simpleheat.prototype = {
           blur = 15;
         }
 
-        // create a grayscale blurred circle image that we'll use for drawing points
-        var circle = this._circle = document.createElement('canvas'),
-            ctx = circle.getContext('2d'),
-            r2 = this._r = r + blur;
-
-        circle.width = circle.height = r2 * 2;
-
-        ctx.shadowOffsetX = ctx.shadowOffsetY = 200;
-        ctx.shadowBlur = blur;
-        ctx.shadowColor = 'black';
-
-        ctx.beginPath();
-        ctx.rect(r2 - 200, r2 - 200, 2*r, 2*r);
-        ctx.closePath();
-        ctx.fill();
+        var r2 = this._r = r + blur;
 
         return this;
     },
 
     gradient: function (grad) {
-        // create a 256x1 gradient that we'll use to turn a grayscale heatmap into a colored one
-        var canvas = document.createElement('canvas'),
-            ctx = canvas.getContext('2d'),
-            gradient = ctx.createLinearGradient(0, 0, 0, 256);
 
-        canvas.width = 1;
-        canvas.height = 256;
-
-        for (var i in grad) {
-            gradient.addColorStop(i, grad[i]);
-        }
-
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, 1, 256);
-
-        this._grad = ctx.getImageData(0, 0, 1, 256).data;
+        this._grad = d3.scale.linear()
+          .domain(_.keys(grad))
+          .range(_.values(grad))
 
         return this;
     },
 
-    draw: function (minOpacity) {
-        if (!this._circle) {
-            this.radius(this.defaultRadius);
-        }
+    draw: function () {
         if (!this._grad) {
             this.gradient(this.defaultGradient);
         }
@@ -109,34 +80,19 @@ simpleheat.prototype = {
         var ctx = this._ctx;
 
         ctx.clearRect(0, 0, this._width, this._height);
+        ctx.globalAlpha = this._forcedAlpha;
+        
+        var r = this._r;
 
-        // draw a grayscale heatmap by putting a blurred circle at each data point
         for (var i = 0, len = this._data.length, p; i < len; i++) {
             p = this._data[i];
-
-            ctx.globalAlpha = p[2] / this._max
-            ctx.drawImage(this._circle, p[0] - this._r, p[1] - this._r);
+            ctx.fillStyle = this._grad(p[2] / this._max);
+            ctx.beginPath();
+            ctx.rect(p[0] - r, p[1] - r, 2*r, 2*r);
+            ctx.closePath();
+            ctx.fill();
         }
-
-        // colorize the heatmap, using opacity value of each pixel to get the right color from our gradient
-        var colored = ctx.getImageData(0, 0, this._width, this._height);
-        this._colorize(colored.data, this._grad);
-        ctx.putImageData(colored, 0, 0);
-
         return this;
-    },
-
-    _colorize: function (pixels, gradient) {
-        for (var i = 3, len = pixels.length, j; i < len; i += 4) {
-            j = pixels[i] * 4; // get gradient color from opacity value
-
-            if (j) {
-                pixels[i - 3] = gradient[j];
-                pixels[i - 2] = gradient[j + 1];
-                pixels[i - 1] = gradient[j + 2];
-                pixels[i] = this._forcedAlpha;
-            }
-        }
     }
 
 };
