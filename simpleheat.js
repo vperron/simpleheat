@@ -54,7 +54,9 @@ simpleheat.prototype = {
     },
 
     radius: function (r, blur) {
-        blur = blur || 15;
+        if ((blur === null) || (blur === undefined)) {
+          blur = 15;
+        }
 
         // create a grayscale blurred circle image that we'll use for drawing points
         var circle = this._circle = document.createElement('canvas'),
